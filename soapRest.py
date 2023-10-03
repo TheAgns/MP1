@@ -45,22 +45,24 @@ def findCountryByIp(ip):
     country = re.findall(regEx, resultString).pop()
     return country
 
-genderize_service = "https://api.genderize.io?name={name}"
+genderize_service = "https://api.genderize.io?name={name}&country_id={country}"
 
 for index, row in invitees.iterrows():
 
     country = findCountryByIp(row["ip"])
 
-    name_response = requests.get(genderize_service.format(name=row["name"]))
-    name_data = name_response.json()
-    gender = name_data.get("gender", "")
+    response = requests.get(genderize_service.format(name=row["name"],country=country))
+    data = response.json()
+    gender = data.get("gender", "")
 
-    if gender == "male" and country in ["US", "UK", "CA", "AU", "NZ", "DK"]:
+    if gender == "male":
         title = "Mr."
-    elif gender == "female" and country in ["US", "UK", "CA", "AU", "NZ", "DK"]:
+    elif gender == "female":
         title = "Ms."
     else:
-        title = "error on define: "
+        title = ""
+
+    print(title + " " + row["name"])
 
     message_body = message_body_template.format(title=title, name=row["name"])
 
